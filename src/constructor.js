@@ -1,7 +1,7 @@
 var Constructor = (function() {
 
-  function extend(target, source){
-    for (var p in source) target[p] = source[p];
+  function extend(object){
+    for (var p in object) this.prototype[p] = object[p];
   }
 
   function emptyFunction(){}
@@ -17,14 +17,16 @@ var Constructor = (function() {
       return (typeof self.initialize === "function") ? self.initialize.apply(self, arguments) || self : self;
     };
 
+    constructor.extend = extend;
+
     if (typeof superConstructor === "function"){
       constructor.superconstructor = superConstructor;
       constructor.prototype = construct(superConstructor.prototype);
       constructor.prototype.constructor = constructor;
       constructor.prototype.superobject = superConstructor.prototype;
-      if (prototype) extend(constructor.prototype, prototype);
+      if (prototype) constructor.extend(prototype);
     }else{
-      if (superConstructor) extend(constructor.prototype, superConstructor);
+      if (superConstructor) constructor.extend(superConstructor);
     }
 
     return constructor;
