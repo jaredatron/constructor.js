@@ -96,5 +96,14 @@ less then 40 lines of code
 ## What is superobject?
 
 super is... well... super useful; but JavaScript doesn't have a concept of super and I didn't want to simulate it by wrapping functions
-so I simply gave a constructor instances a reference to it's constructor's superconstructor.prototype object so it could call or apply
- it's "parent"'s methods. 
+so I simply gave a constructor instances a reference to it's constructor's prototype's constructor.prototype object so it could call or apply
+it's "parent"'s methods. 
+
+In other words it's shorthand for doing this:
+
+    var Array2 = new Constructor(Array, {
+      push: function(){
+        this.constructor.prototype.constructor.prototype.push.apply(this, arguments);
+        return this;
+      }
+    });

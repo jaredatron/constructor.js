@@ -22,14 +22,18 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
   test('new Constructor should set prototype.superobject to it\'s superconstructor\'s prototype object', function(){
     var Car   = new Constructor();
     var Truck = new Constructor(Car);
-    return Truck.prototype.superobject === Car.prototype;
+    return  (
+      Truck.prototype.constructor === Car &&
+      Truck.prototype.superobject === Car.prototype &&
+      Truck.prototype.superobject === Truck.prototype.constructor.prototype
+    );
   });
 
   test('new Constructor should accept a constructor as a superconstructor', function(){
     var Car   = new Constructor();
     var Truck = new Constructor(Car);
     var dodge = new Truck;
-    return dodge instanceof Truck && dodge instanceof Car && Truck.superconstructor === Car;
+    return dodge instanceof Truck && dodge instanceof Car && Truck.prototype.constructor === Car;
   });
 
   test('Constructor() should simulte new Constructor', function(){
@@ -67,7 +71,9 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
 
     var Truck = new Constructor(Car, {
       drive: function(){
-        this.constructor.superconstructor.prototype.drive.apply(this, arguments);
+        console.log(this)
+        console.dir(this.constructor);
+        this.constructor.prototype.constructor.prototype.drive.apply(this, arguments);
       }
     });
 
