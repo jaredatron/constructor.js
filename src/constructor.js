@@ -7,21 +7,21 @@ var Constructor = (function() {
   function emptyFunction(){}
   function construct(superobject){
     emptyFunction.prototype = superobject;
-    var object = new emptyFunction;
-    object.superobject = superobject;
-    return object;
+    return new emptyFunction;
   }
 
   function Constructor(superConstructor, prototype){
 
     function constructor(){
-      if (typeof this.initialize === "function") return this.initialize.apply(this, arguments);
+      var self = (this instanceof constructor) ? this : construct(constructor.prototype);
+      return (typeof self.initialize === "function") ? self.initialize.apply(self, arguments) || self : self;
     };
 
     if (typeof superConstructor === "function"){
       constructor.superconstructor = superConstructor;
       constructor.prototype = construct(superConstructor.prototype);
       constructor.prototype.constructor = constructor;
+      constructor.prototype.superobject = superConstructor.prototype;
       if (prototype) extend(constructor.prototype, prototype);
     }else{
       if (superConstructor) extend(constructor.prototype, superConstructor);

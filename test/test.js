@@ -18,7 +18,7 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
     var Car = new Constructor();
     return Car.prototype.constructor === Car;
   });
-  
+
   test('new Constructor should set prototype.superobject to it\'s superconstructor\'s prototype object', function(){
     var Car   = new Constructor();
     var Truck = new Constructor(Car);
@@ -30,6 +30,18 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
     var Truck = new Constructor(Car);
     var dodge = new Truck;
     return dodge instanceof Truck && dodge instanceof Car && Truck.superconstructor === Car;
+  });
+
+  test('Constructor() should simulte new Constructor', function(){
+    var Car = new Constructor({
+      initialize: function(name){
+        this.name = name;
+      }
+    });
+
+    var dodge = Car('dodge');
+
+    return dodge instanceof Car && dodge.name === 'dodge';
   });
 
   test('new constructor should pass its arguments to constructor.prototype.initialize if it exists', function(){
@@ -81,8 +93,8 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
 
     return car_drive_called;
   });
-  
-  
+
+
   // printing in V8 and Rhino
   if (typeof load !== "undefined"){
     print(this.tests.passed+' out of '+this.tests.failed+' tests passed');
