@@ -19,13 +19,13 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
     return Car.prototype.constructor === Car;
   });
 
-  test('new Constructor should set prototype.superobject to it\'s superconstructor\'s prototype object', function(){
+  test('new Constructor should set prototype.superObject to it\'s superconstructor\'s prototype object', function(){
     var Car   = new Constructor();
     var Truck = new Constructor(Car);
     return  (
-      Truck.prototype.constructor === Car &&
-      Truck.prototype.superobject === Car.prototype &&
-      Truck.prototype.superobject === Truck.prototype.constructor.prototype
+      Truck.prototype.constructor === Truck &&
+      Truck.prototype.superObject === Car.prototype &&
+      Truck.prototype.superObject === Truck.superConstructor.prototype
     );
   });
 
@@ -33,7 +33,11 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
     var Car   = new Constructor();
     var Truck = new Constructor(Car);
     var dodge = new Truck;
-    return dodge instanceof Truck && dodge instanceof Car && Truck.prototype.constructor === Car;
+    return(
+      dodge instanceof Truck &&
+      dodge instanceof Car &&
+      Truck.prototype.constructor === Truck
+    );
   });
 
   test('Constructor() should simulte new Constructor', function(){
@@ -62,42 +66,73 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
     return initialize_scope === bessy && initialize_arguments[0] === 'brown' && initialize_arguments[1] === 12;
   });
 
-  test('super 1', function(){
-    var car_drive_called = false;
-
-    var Car = new Constructor({
-      drive: function(){ car_drive_called = true; }
-    });
-
-    var Truck = new Constructor(Car, {
-      drive: function(){
-        console.log(this)
-        console.dir(this.constructor);
-        this.constructor.prototype.constructor.prototype.drive.apply(this, arguments);
+  test('should take Array as a super constructor', function() {
+    var MyArray = new Constructor(Array, {
+      toArray: function(){
+        var i, array = [];
+        for (i = this.length - 1; i >= 0; i--) array[i] = this[i];
+        return array;
+      },
+      toString: function() {
+        return this.toArray().toString();
+      },
+      push: function(){
+        this.$super('push', arguments);
+        return this;
       }
     });
-
-    new Truck().drive();
-
-    return car_drive_called;
+    return(
+      MyArray.superConstructor === Array &&
+      (new MyArray).push(1,2,3).toString() === '1,2,3'
+    );
   });
 
-  test('super 2', function(){
-    var car_drive_called = false;
+  test('should take an anonymous function as an extension', function() {
+    var private_function_called = false;
+
+    var Frog = new Constructor(function() {
+      function privateFunction(){ private_function_called = true }
+      this.publicFunction = function() { privateFunction(); };
+    });
+
+    new Frog().publicFunction();
+
+    return (
+      Frog.superConstructor === Constructor &&
+      private_function_called
+    );
+  });
+
+  test('super chain', function(){
+    var
+      car_drive_called = false,
+      truck_drive_called = false,
+      monster_truck_drive_called = false;
+
 
     var Car = new Constructor({
-      drive: function(){ car_drive_called = true; }
+      drive: function(){
+        car_drive_called = true;
+      }
     });
 
     var Truck = new Constructor(Car, {
       drive: function(){
-        this.superobject.drive.apply(this, arguments);
+        truck_drive_called = true;
+        this.$super('drive', arguments);
       }
     });
 
-    new Truck().drive();
+    var MonsterTruck = new Constructor(Truck, {
+      drive: function(){
+        monster_truck_drive_called = true;
+        this.$super('drive', arguments);
+      }
+    });
 
-    return car_drive_called;
+    new MonsterTruck().drive();
+
+    return car_drive_called && truck_drive_called && monster_truck_drive_called;
   });
 
 
@@ -106,6 +141,13 @@ var constructor_test_suite = new SimpleTestSuite(function(test){
     print(this.tests.passed+' out of '+this.tests.failed+' tests passed');
     for (var i=0; i < this.tests.length; i++) {
       print((this.tests[i][0] ? 'PASS' : 'FAIL')+': '+this.tests[i][1]);
+    };
+  }
+
+  if (typeof console !== "undefined" && typeof console.log === 'function'){
+    console.log(this.tests.passed+' out of '+this.tests.failed+' tests passed');
+    for (var i=0; i < this.tests.length; i++) {
+      console[this.tests[i][0] ? 'info' : 'warn']((this.tests[i][0] ? 'PASS' : 'FAIL')+': '+this.tests[i][1]);
     };
   }
 });
