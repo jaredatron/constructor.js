@@ -1,11 +1,11 @@
 #Constructor.js
 
-Constructor.js provides a constructor for constructors. 
+Constructor.js provides a constructor for constructors.
 
 
 ## Why:
 
-because I'd rather do this
+because I'd rather do this:
 
     var Car = new Constructor({
       initialize: function(name){
@@ -16,7 +16,7 @@ because I'd rather do this
       }
     });
 
-then this
+then this:
 
     var Car = function(name){
       this.name = name;
@@ -26,14 +26,57 @@ then this
         this.driving = true;
       }
     };
-    
 
-## Another class system for JavaScript. Really?
+or even better:
 
-Constructor.js is not attempting to mimic another language's class system. Instead it embraces the power of JavaScript's prototype system weighing in at
-less then 40 lines of code
+    var Car = new Constructor(function(){
 
-## Example
+      this.initialize = function(name){
+        this.name = name;
+      };
+
+      this.drive = function(){
+        this.driving = true;
+      };
+
+    });
+
+## Another class system for JavaScript? Really!?
+
+Constructor.js doesn't attempt to mimic other languages like Ruby. Instead it simply wraps up a common pattern in some tasty syntactic sugar.
+
+## A common pattern for inheritance
+
+    // before
+
+    function Car(name){
+      this.name = name;
+    }
+
+    function Truck(name, size){
+      Car.apply(this, [name]);
+      this.size = size;
+    }
+
+    Truck.prototype = new Car;
+
+    // after
+
+    var Car = new Constructor({
+      initialize: function(name){
+        this.name = name;
+      }
+    });
+
+    var Truck = new Constructor(Car, {
+      initialize: function(name, size){
+        this.$super('initialize', [name]);
+        this.size = size;
+      }
+    });
+
+
+## Examples
 
 ### Create a constructor
 
@@ -56,14 +99,14 @@ less then 40 lines of code
 
     var Truck = new Constructor(Car, {
       initialize: function(name, size){
-        this.superobject.initialize.call(this, name);
+        this.$super('initialize', [name]);
         this.size = size;
       }
     });
 
     Truck.superconstructor === Car
     //-> true
-    
+
     Truck.prototype.superobject === Car.prototype
     //-> true
 
@@ -85,25 +128,10 @@ less then 40 lines of code
 
     var Array2 = new Constructor(Array, {
       push: function(){
-        this.superobject.push.apply(this, arguments);
+        this.$super('push', arguments);
         return this;
       }
     });
     var a2 = new Array2();
     a2.push(1,2,3);
     //-> a2
-
-## What is superobject?
-
-super is... well... super useful; but JavaScript doesn't have a concept of super and I didn't want to simulate it by wrapping functions
-so I simply gave a constructor instances a reference to it's constructor's prototype's constructor.prototype object so it could call or apply
-it's "parent"'s methods. 
-
-In other words it's shorthand for doing this:
-
-    var Array2 = new Constructor(Array, {
-      push: function(){
-        this.constructor.prototype.constructor.prototype.push.apply(this, arguments);
-        return this;
-      }
-    });
