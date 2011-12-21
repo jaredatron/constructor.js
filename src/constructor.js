@@ -14,15 +14,18 @@ var Constructor = (function() {
     return new ConstructorInstance;
   }
 
+  function toString() { return 'Constructor'; };
+
   function Constructor(superConstructor, extension){
 
-    function constructor(){
+    var constructor = function ConstructorInstance(){
       var self = (this instanceof constructor) ? this : construct(constructor.prototype);
       self.constructor = constructor;
       return (typeof self.initialize === "function") ?
         self.initialize.apply(self, arguments) || self : self;
     };
 
+    constructor.toString = toString;
     constructor.extend = extend;
 
     if (arguments.length === 1 &&
@@ -62,6 +65,8 @@ var Constructor = (function() {
       this.superObject = superObject;
     }
   };
+
+
 
   return Constructor;
 
