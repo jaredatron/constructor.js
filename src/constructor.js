@@ -47,13 +47,24 @@ var Constructor = (function() {
     constructor.prototype.constructor = constructor;
     constructor.prototype.superObject = superConstructor.prototype;
 
-    if (extension) constructor.extend(extension);
-    constructor.prototype.$super || (constructor.prototype.$super = Constructor.prototype.$super);
+    for (var p in Constructor.prototype)
+      if (p in constructor.prototype); else
+        constructor.prototype[p] = Constructor.prototype[p];
+
+    if (extension) Constructor.prototype.extend.call(constructor.prototype, extension);
 
     return constructor;
   };
 
   Constructor.superConstructor = undefined;
+
+  Constructor.prototype.extend = function(extension) {
+    if (typeof extension === 'function')
+      extension = extension.apply(this);
+    if (typeof extension === 'object')
+      for (var p in extension) this[p] = extension[p];
+    return this;
+  };
 
   Constructor.prototype.$super = function(property, args){
     var superObject = this.superObject, func = superObject[property];
